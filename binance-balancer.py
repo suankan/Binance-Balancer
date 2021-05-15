@@ -55,12 +55,12 @@ lastweights = {
 csvBalance = 'binance_balance_log.csv'
 
 # globals
-prices = {} # asset prices in bnb
-prices['BNB'] = 1.0
-BNBUSD = 0.0
+prices = {} # asset prices in btc
+prices['BTC'] = 1.0
+BTCUSD = 0.0
 balances = {}
-balancesbnb = {}
-totalbnb = 0
+balancesbtc = {}
+totalbtc = 0
 diffs = {}
 steps = {}
 ticks = {}
@@ -92,75 +92,60 @@ def append_list_as_row(file_name, list_of_elem):
 def saveBalance():
     # Returns a datetime object containing the local date and time
     dateTimeObj = datetime.now()
-    # List of row elements (Timestamp, BNB balance, USD balance, Notes)
-    row_contents = [str(dateTimeObj), str(totalbnb) , str(totalbnb * BNBUSD)]
+    # List of row elements (Timestamp, Bitcoin balance, USD balance, Notes)
+    row_contents = [str(dateTimeObj), str(totalbtc) , str(totalbtc * BTCUSD)]
     # Append a list as new line to an old csv file
     append_list_as_row(csvBalance, row_contents)
 
 
 def getPrices():
-    global prices, BNBUSD
+    global prices, BTCUSD
     # get prices
     priceinfo = client.get_all_tickers()
-    print('priceinfo:')
-    pprint.pprint(priceinfo)
     for price in priceinfo:
         sym = price['symbol']
         asset = sym[0:-3]
         quote = sym[-3:]
         p = float(price['price'])
-        if sym == 'BNBUSDT':
-            BNBUSD = p
+        if sym == 'BTCUSDT':
+            BTCUSD = p
             prices['USDT'] = 1 / p
-        if sym == 'BNBBTC':
-            prices['BTC'] = 1 / p
-        if sym == 'BNBETH':
-            prices['ETH'] = 1 / p
-        elif quote == 'BNB':
+        elif quote == 'BTC':
             if asset in lastweights:
-                print(f'quote: BNB, asset: {asset}')
                 prices[asset] = p
-    print('Prices (BNB)')
+    print('Prices (BTC)')
     pprint.pprint(prices)
 
 def getBalance():
-    global balances, balancesbnb, totalbnb
-    totalbnb = 0
+    global balances, balancesbtc, totalbtc
+    totalbtc = 0
     # get balance
     info = client.get_account()
-    # print("client.get_account() balances:")
-    # pprint.pprint(client.get_account()['balances'])
-    pprint.pprint(f'balancesbnb: {balancesbnb}')
-    pprint.pprint('lastweights:')
-    pprint.pprint(lastweights)
     for balance in info['balances']:
-        pprint.pprint('processing balance:')
-        pprint.pprint(balance)
         free = float( balance['free'] )
         locked =  float( balance['locked'] )
         asset = balance['asset']
-        print(f'asset: {asset}')
         if asset in lastweights:
             bal = free + locked
             balances[ asset ] = bal
-            balancesbnb[ asset ] = bal * prices[asset]
-            totalbnb = totalbnb + bal * prices[asset]
+            balancesbtc[ asset ] = bal * prices[asset]
+            totalbtc = totalbtc + bal * prices[asset]
     # print(balances)
-    print("Balances (BNB)")
-    pprint.pprint(balancesbnb)
-    print("Total (BNB / USD)")
-    print(totalbnb," BNB /  $ ",totalbnb*BNBUSD)
+    print("Balances (BTC)")
+    pprint.pprint(balancesbtc)
+    print("Total (BTC / USD)")
+    print(totalbtc," BTC /  $ ",totalbtc*BTCUSD)
 
 def getDiffs():
     global diffs
     # get difference
     for asset in lastweights:
-        adjshare = totalbnb * lastweights[asset]
-        currshare = balancesbnb[asset]
+        adjshare = totalbtc * lastweights[asset]
+        currshare = balancesbtc[asset]
         diff = adjshare - currshare
         diffs [ asset ] = diff
     diffs = dict(sorted(diffs.items(), key=lambda x: x[1]))
-    print('Adjustments (BNB)')
+    print('Adjustments (BTC)')
     pprint.pprint(diffs)
 
 def cancelOrders():
@@ -170,7 +155,7 @@ def cancelOrders():
     for order in orders:
         sym = order['symbol']
         asset = sym[0:-3]
-        if sym == 'BNBUSDT' or asset in lastweights:
+        if sym == 'BTCUSDT' or asset in lastweights:
             orderid = order['orderId']
             result = client.cancel_order(symbol=sym,orderId=orderid)
             # print(result)
@@ -193,7 +178,7 @@ def getSteps():
         asset = dat['baseAsset']
         quote = dat['quoteAsset']
         filters = dat['filters']
-        if quote == 'BNB' and asset in lastweights:
+        if quote == 'BTC' and asset in lastweights:
             for filt in filters:
                 if filt['filterType'] == 'LOT_SIZE':
                     steps[asset] = filt['stepSize']
@@ -201,7 +186,7 @@ def getSteps():
                     ticks[asset] = filt['tickSize']
                 elif filt['filterType'] == 'MIN_NOTIONAL':
                     minQtys[asset] = filt['minNotional']
-        elif sym == 'BNBUSDT':
+        elif sym == 'BTCUSDT':
             for filt in filters:
                 if filt['filterType'] == 'LOT_SIZE':
                     steps[sym] = filt['stepSize']
@@ -212,26 +197,26 @@ def getSteps():
 
 
 def placeOrders():
-    # all go through bnb
+    # all go through btc
     # this can be smart routed later
     global diffs
     getSteps()
     # set sell orders
     for asset in diffs:
         diff = diffs[asset]
-        if asset != 'BNB':
+        if asset != 'BTC':
             thresh = float(minQtys[asset])
             if  diff <  -0.0001 : # threshold $ 1
-                if asset != 'BNB' and asset != 'USDT':
-                    sym = asset + 'BNB'
-                    amountf = 0-diff # amount in bnb
+                if asset != 'BTC' and asset != 'USDT':
+                    sym = asset + 'BTC'
+                    amountf = 0-diff # amount in btc
 
                     amount = format_value ( amountf / prices[asset] , steps[asset] )
                     price = format_value ( prices [ asset ] + 0.003 * prices [ asset ], ticks[asset] )# adjust for fee
                     minNotion = float(amount) * float(price)
                     if minNotion > thresh:
                         diffs[asset] = diffs[asset] + amountf
-                        diffs['BNB'] = diffs['BNB'] - amountf
+                        diffs['BTC'] = diffs['BTC'] - amountf
                         print('Setting sell order for {}, amount:{}, price:{}, thresh:{}'.format(asset,amount,price,thresh))
                         order = client.order_limit_sell(
                             symbol = sym,
@@ -239,13 +224,13 @@ def placeOrders():
                             price = price )
 
                 elif asset == 'USDT':
-                    sym = 'BNBUSDT'
+                    sym = 'BTCUSDT'
                     amount = 0-diff
-                    if amount > ( thresh / BNBUSD ):
+                    if amount > ( thresh / BTCUSD ):
                         diffs[asset] = diffs[asset] + amount
-                        diffs['BNB'] = diffs['BNB'] - amount
+                        diffs['BTC'] = diffs['BTC'] - amount
                         amount = format_value ( amount  , steps[sym] )
-                        price = format_value ( BNBUSD - 0.003 * BNBUSD , ticks[sym])# adjust for fee
+                        price = format_value ( BTCUSD - 0.003 * BTCUSD , ticks[sym])# adjust for fee
                         print('Setting buy order for {}, amount:{}, price:{}'.format(asset,amount,price))
                         order = client.order_limit_buy(
                             symbol = sym,
@@ -259,11 +244,11 @@ def placeOrders():
 
     for asset in diffs:
         diff = diffs[ asset ]
-        if asset != 'BNB':
+        if asset != 'BTC':
             thresh = float( minQtys[ asset ] )
             if  diff >  0.0001 : # threshold $ 1
-                if asset != 'BNB' and asset != 'USDT':
-                    sym = asset + 'BNB'
+                if asset != 'BTC' and asset != 'USDT':
+                    sym = asset + 'BTC'
                     amountf = diff
 
                     amount = format_value ( amountf / prices[asset] , steps[asset] )
@@ -271,7 +256,7 @@ def placeOrders():
                     minNotion = float(amount) * float(price)
                     if minNotion > thresh:
                         diffs[asset] = diffs[asset] - amountf
-                        diffs['BNB'] = diffs['BNB'] + amountf
+                        diffs['BTC'] = diffs['BTC'] + amountf
                         print('Setting buy order for {}, amount:{}, price:{}, thresh:{}'.format(asset,amount,price,thresh))
                         order = client.order_limit_buy(
                             symbol = sym,
@@ -279,13 +264,13 @@ def placeOrders():
                             price = price )
 
                 elif asset == 'USDT':
-                    sym = 'BNBUSDT'
+                    sym = 'BTCUSDT'
                     amount = diff
-                    if amount > ( thresh / BNBUSD ):
+                    if amount > ( thresh / BTCUSD ):
                         diffs[asset] = diffs[asset] - amount
-                        diffs['BNB'] = diffs['BNB'] + amount
+                        diffs['BTC'] = diffs['BTC'] + amount
                         amount = format_value ( amount  , steps[sym] )
-                        price = format_value ( BNBUSD + 0.003 * BNBUSD , ticks[sym])# adjust for fee
+                        price = format_value ( BTCUSD + 0.003 * BTCUSD , ticks[sym])# adjust for fee
                         print('Setting sell order for {}, amount:{}, price:{}'.format(asset,amount,price))
                         order = client.order_limit_sell(
                             symbol = sym,
