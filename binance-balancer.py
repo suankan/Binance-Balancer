@@ -115,12 +115,12 @@ def getPrices():
     pprint.pprint(prices)
 
 def getBalance():
-    global balances, balancesbtc, totalbtc 
+    global balances, balancesbtc, totalbtc
     totalbtc = 0
     # get balance
     info = client.get_account()
     for balance in info['balances']:
-        free = float( balance['free'] ) 
+        free = float( balance['free'] )
         locked =  float( balance['locked'] )
         asset = balance['asset']
         if asset in lastweights:
@@ -179,7 +179,7 @@ def getSteps():
         if quote == 'BTC' and asset in lastweights:
             for filt in filters:
                 if filt['filterType'] == 'LOT_SIZE':
-                    steps[asset] = filt['stepSize']                     
+                    steps[asset] = filt['stepSize']
                 elif filt['filterType'] == 'PRICE_FILTER':
                     ticks[asset] = filt['tickSize']
                 elif filt['filterType'] == 'MIN_NOTIONAL':
@@ -208,19 +208,19 @@ def placeOrders():
                 if asset != 'BTC' and asset != 'USDT':
                     sym = asset + 'BTC'
                     amountf = 0-diff # amount in btc
-                                          
+
                     amount = format_value ( amountf / prices[asset] , steps[asset] )
                     price = format_value ( prices [ asset ] + 0.003 * prices [ asset ], ticks[asset] )# adjust for fee
                     minNotion = float(amount) * float(price)
                     if minNotion > thresh:
                         diffs[asset] = diffs[asset] + amountf
-                        diffs['BTC'] = diffs['BTC'] - amountf    
+                        diffs['BTC'] = diffs['BTC'] - amountf
                         print('Setting sell order for {}, amount:{}, price:{}, thresh:{}'.format(asset,amount,price,thresh))
                         order = client.order_limit_sell(
                             symbol = sym,
                             quantity = amount,
                             price = price )
-                    
+
                 elif asset == 'USDT':
                     sym = 'BTCUSDT'
                     amount = 0-diff
@@ -234,7 +234,7 @@ def placeOrders():
                             symbol = sym,
                             quantity = amount,
                             price = price )
-                
+
 
 
     # set buy orders
@@ -254,13 +254,13 @@ def placeOrders():
                     minNotion = float(amount) * float(price)
                     if minNotion > thresh:
                         diffs[asset] = diffs[asset] - amountf
-                        diffs['BTC'] = diffs['BTC'] + amountf 
+                        diffs['BTC'] = diffs['BTC'] + amountf
                         print('Setting buy order for {}, amount:{}, price:{}, thresh:{}'.format(asset,amount,price,thresh))
                         order = client.order_limit_buy(
                             symbol = sym,
                             quantity = amount,
                             price = price )
-                    
+
                 elif asset == 'USDT':
                     sym = 'BTCUSDT'
                     amount = diff
@@ -274,7 +274,7 @@ def placeOrders():
                             symbol = sym,
                             quantity = amount,
                             price = price )
-                
+
 
     # print ( 'Final differences' )
     # pprint.pprint ( diffs )
@@ -286,8 +286,8 @@ def iteratey():
         getBalance()
         getDiffs()
         cancelOrders()
-        placeOrders()   
-        saveBalance() 
+        placeOrders()
+        saveBalance()
 
 iteratey()
 
