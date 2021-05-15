@@ -33,21 +33,23 @@ api_secret = ''
 # speed
 
 lastweights = {
-    "BAT":0.005,
-    "ADA":0.005, 
-    "EOS":0.005, 
-    "NEO":0.005, 
-    "XLM":0.02,
-    "XRP":0.02,
-    "DASH":0.01,
-    "ETC":0.01,
-    "BNB":0.03,
-    "NANO":0.03,
-    "ZEC":0.03, 
-    "XMR":0.04,
-    "LTC":0.04, 
-    "BTC": 0.50,  
-    "USDT": 0.25 } 
+    "AAVE": 0.0625,
+    "ADA":  0.0625,
+    "BNB":  0.0625,
+    "BTC":  0.0625,
+    "DOT":  0.0625,
+    "EOS":  0.0625,
+    "ETH":  0.0625,
+    "LINK": 0.0625,
+    "LTC":  0.0625,
+    "RUNE": 0.0625,
+    "SOL":  0.0625,
+    "THETA":0.0625,
+    "UNI":  0.0625,
+    "XLM":  0.0625,
+    "XMR":  0.0625,
+    "XRP":  0.0625,
+}
 
 # Timestamped bitcoin and usd portfolio value
 csvBalance = 'binance_balance_log.csv'
