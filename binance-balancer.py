@@ -18,8 +18,8 @@ import pprint
 
 
 # set keys
-api_key = ''
-api_secret = ''
+api_key = 'Qj028zi8zQNP85r68MQ2jfDTErSZhaU3OxDOacxqGrs2ATYjGy6TyipqBwqbSPyQ'
+api_secret = 'pmqOR2evibFmcKS2NwAy9w04p9erGf05QvnnjnpSLXCS8g3Kp5TqhJW3dQcjCnhi'
 
 # set weights
 # look for 6 to 12 month value
@@ -35,11 +35,11 @@ api_secret = ''
 lastweights = {
     "BTC":  0.25,
     "ETH":  0.25,
-    "BNB":  0.2,
-    "SOL":  0.2,
-    "ADA":  0.2,
-    "THETA": 0.2,
-    "UNI":  0.2,
+    "BNB":  0.1,
+    "SOL":  0.1,
+    "ADA":  0.1,
+    "THETA": 0.1,
+    "UNI":  0.1,
     "DOT":  0,
 }
 
