@@ -39,7 +39,8 @@ lastweights = {
     "SOL":  0.2,
     "THETA": 0.1,
     "UNI":  0.1,
-    "DOT":  0.1,
+    "DOT":  0.05,
+    "BCH": 0.05
 }
 
 # Timestamped bitcoin and usd portfolio value
