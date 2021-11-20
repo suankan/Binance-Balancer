@@ -33,13 +33,13 @@ api_secret = 'pmqOR2evibFmcKS2NwAy9w04p9erGf05QvnnjnpSLXCS8g3Kp5TqhJW3dQcjCnhi'
 # speed
 
 lastweights = {
-    "BTC":  0.25,
-    "ETH":  0.25,
+    "BTC":  0.2,
+    "ETH":  0.2,
     "BNB":  0.1,
     "SOL":  0.2,
     "THETA": 0.1,
     "UNI":  0.1,
-    "DOT":  0,
+    "DOT":  0.1,
 }
 
 # Timestamped bitcoin and usd portfolio value
